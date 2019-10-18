@@ -8,6 +8,7 @@
   },
   "author": "",
   "dependencies": {
+    "@types/ffmpeg": "^1.0.0",
     "@types/node": "^12.11.1",
     "ffmpeg": "0.0.4",
     "node-id3": "^0.1.11",

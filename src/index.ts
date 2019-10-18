@@ -4,6 +4,7 @@ import { readFile } from "fs";
 import { argv } from "yargs";
 import { take, map, tap, mergeMap } from "rxjs/operators";
 import {
+  convertEncoding as convertEncodingAction,
   readTags as readTagsAction,
   copyFile as copyFileAction,
   removeTags as removeTagsAction,
@@ -33,6 +34,7 @@ readFileAsync(fileIn, { encoding: "utf8" })
       take(files.length - 1),
       map((i: number) => files[i]),
       tap(logStr("file name")),
+      mergeMap(convertEncodingAction(baseIn)),
       mergeMap(readTagsAction(baseIn)),
       tap(logVal("tags read")),
       mergeMap(copyFileAction(baseIn, baseOut)),

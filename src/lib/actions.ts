@@ -1,4 +1,5 @@
 import * as NodeID3 from "node-id3";
+import * as ffmpeg from "ffmpeg";
 import { resolve as resolvePath } from "path";
 import { constants as constantsFs, copyFile as copyFileNode, mkdir } from "fs";
 import { ObservableInput } from "rxjs";
@@ -15,7 +16,45 @@ const ALLOWED_TAGS = [
 ];
 
 type ReadTagsCallbackFn = (LogObj) => void;
+interface Video {
+  fnExtractSoundToMP3: (
+    destinationFileName: string,
+    callback: (err: object, newFile: string) => void
+  ) => void;
+}
+
 const { COPYFILE_EXCL } = constantsFs;
+
+export const convertEncoding = (baseIn: string) => (
+  file: string
+): ObservableInput<string> =>
+  new Promise((resolve, reject) => {
+    const inFile = resolvePath(__dirname, "..", "..", baseIn, file);
+    console.log(inFile);
+
+    let process: Promise<Video>;
+    try {
+      process = new ffmpeg(inFile);
+    } catch (err) {
+      throw new Error(`ffmpeg error! ${JSON.stringify(err)}`);
+    }
+    process
+      .then(video => {
+        const destFile = file.replace(/m4a/, "mp3");
+        video.fnExtractSoundToMP3(
+          resolvePath(baseIn, destFile),
+          (err, newFile) => {
+            if (err) {
+              return reject(err);
+            }
+            resolve(newFile);
+          }
+        );
+      })
+      .catch(err => {
+        return reject(err);
+      });
+  });
 
 export const readTags = (baseIn: string) => (
   file: string
